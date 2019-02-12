@@ -1,6 +1,6 @@
 FROM golang:1.10.7-alpine
 
-RUN apk update && apk add make dep
+RUN apk update && apk add make dep git
 
 ENV DIR ${GOPATH}/src/app
 

@@ -5,6 +5,9 @@ services:
     command: make test
     environment:
       - SHELL=/bin/sh
+      - PORT=3100
+    ports:
+      - 3100:3100
     volumes:
       - ./jsonHttpHandler/:/go/src/app/jsonHttpHandler/
       - ./examples/:/go/src/app/examples/

@@ -3,9 +3,9 @@ SOURCES=./
 dep:
 	dep ensure
 
-example:
-	go run ${SOURCES}/examples/main.go
+http_example:
+	go run ${SOURCES}/examples/http/main.go
 
 .DEFAULT_GOAL := test
-test: example
+test: http_example
 
