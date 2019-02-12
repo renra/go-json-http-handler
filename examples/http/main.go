@@ -7,15 +7,41 @@ import (
   "app/jsonHttpHandler"
 )
 
+type Logger struct {
+}
+
+func (l *Logger) LogWithSeverity(data map[string]string, severity int) {
+  fmt.Println(fmt.Sprintf("[%d] %v", severity, data))
+}
+
+type Config struct {
+}
+
+func (c *Config) Get(key string) interface {} {
+  return key
+}
+
+func (c *Config) GetString(key string) string {
+  return key
+}
+
 type Globals struct {
 }
 
+func (g *Globals) Config() jsonHttpHandler.Config {
+  return &Config{}
+}
+
+func (g *Globals) Logger() jsonHttpHandler.Logger {
+  return &Logger{}
+}
+
 func (g *Globals) Log(msg string) {
-  fmt.Println(fmt.Sprintf("[Logger] %s", msg))
+  g.Logger().LogWithSeverity(map[string]string{"msg": msg}, 1)
 }
 
 func (g *Globals) LogErrorWithTrace(msg string, trace string) {
-  fmt.Println(fmt.Sprintf("[Logger] msg=%s trace=%s", msg, trace))
+  g.Logger().LogWithSeverity(map[string]string{"msg": msg, "trace": trace}, 0)
 }
 
 func statusHandler (g jsonHttpHandler.Globals) http.HandlerFunc {

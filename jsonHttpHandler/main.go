@@ -6,7 +6,18 @@ import (
   "github.com/go-errors/errors"
 )
 
+type Config interface {
+  Get(string) interface{}
+  GetString(string) string
+}
+
+type Logger interface {
+  LogWithSeverity(map[string]string, int)
+}
+
 type Globals interface {
+  Config() Config
+  Logger() Logger
   Log(string)
   LogErrorWithTrace(string, string)
 }

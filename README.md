@@ -18,16 +18,44 @@ import (
   "github.com/renra/go-json-http-handler/jsonHttpHandler"
 )
 
+// First you need to define some structs to implement the desired behaviour.
+//  You can use other libraries that already implement it for you.
+type Logger struct {
+}
+
+func (l *Logger) LogWithSeverity(data map[string]string, severity int) {
+  fmt.Println(fmt.Sprintf("[%d] %v", severity, data))
+}
+
+type Config struct {
+}
+
+func (c *Config) Get(key string) interface {} {
+  return key
+}
+
+func (c *Config) GetString(key string) string {
+  return key
+}
+
 // Globals is a struct which provides access to utilities and a logger, it is eventually passed down to handlers
 type Globals struct {
 }
 
+func (g *Globals) Config() jsonHttpHandler.Config {
+  return &Config{}
+}
+
+func (g *Globals) Logger() jsonHttpHandler.Logger {
+  return &Logger{}
+}
+
 func (g *Globals) Log(msg string) {
-  fmt.Println(fmt.Sprintf("[Logger] %s", msg))
+  g.Logger().LogWithSeverity(map[string]string{"msg": msg}, 1)
 }
 
 func (g *Globals) LogErrorWithTrace(msg string, trace string) {
-  fmt.Println(fmt.Sprintf("[Logger] msg=%s trace=%s", msg, trace))
+  g.Logger().LogWithSeverity(map[string]string{"msg": msg, "trace": trace}, 0)
 }
 
 // Your own handlers receive globals
