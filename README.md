@@ -2,7 +2,7 @@
 
 Provides hopefully reasonable defaults for JSON HTTP APIs:
 
-* `Content-Type: application/json` to all responses including 404 Not Found
+* adds `Content-Type: application/json` to all responses including 404 Not Found
 * Recovery from panics with a 500 Internal Server Error and an empty JSON response
 * Logging of incoming requests (`Log(string)` and `LogErrorWithTrace(string)` methods are required)
 
@@ -33,7 +33,7 @@ func (g *Globals) LogErrorWithTrace(msg string, trace string) {
 // Your own handlers receive globals
 func statusHandler (g jsonHttpHandler.Globals) http.HandlerFunc {
   return func (w http.ResponseWriter, r *http.Request) {
-    g.Log("Status")
+    g.Log("I'm inside a handler")
     w.WriteHeader(http.StatusOK)
     fmt.Fprintf(w, "{\"status\":\"ok\"}")
   }
@@ -58,6 +58,6 @@ func main() {
 }
 ```
 
-You can use [manners](https://github.com/braintree/manners) instead of `http.Server` add signal handling and so on still relying on `jsonHttpHandler` as the low-level tool.
+You can use [manners](https://github.com/braintree/manners) instead of `http.Server`, add signal handling and so on still relying on `jsonHttpHandler` as the low-level tool.
 
 

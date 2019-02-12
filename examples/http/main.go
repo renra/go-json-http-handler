@@ -20,7 +20,7 @@ func (g *Globals) LogErrorWithTrace(msg string, trace string) {
 
 func statusHandler (g jsonHttpHandler.Globals) http.HandlerFunc {
   return func (w http.ResponseWriter, r *http.Request) {
-    g.Log("Status")
+    g.Log("I'm inside a handler")
     w.WriteHeader(http.StatusOK)
     fmt.Fprintf(w, "{\"status\":\"ok\"}")
   }
