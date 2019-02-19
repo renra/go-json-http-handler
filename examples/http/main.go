@@ -4,6 +4,7 @@ import (
   "os"
   "fmt"
   "net/http"
+  "database/sql"
   "app/jsonHttpHandler"
 )
 
@@ -44,9 +45,19 @@ func (g *Globals) LogErrorWithTrace(msg string, trace string) {
   g.Logger().LogWithSeverity(map[string]string{"msg": msg, "trace": trace}, 0)
 }
 
+func (g *Globals) DB(name string) *sql.DB {
+  conn, _ := sql.Open("postgres", "whatever")
+  return conn
+}
+
+func (g *Globals) Clients() map[string]interface{} {
+  return map[string]interface{}{}
+}
+
 func statusHandler (g jsonHttpHandler.Globals) http.HandlerFunc {
   return func (w http.ResponseWriter, r *http.Request) {
     g.Log("I'm inside a handler")
+    g.Log(fmt.Sprintf("Here are the clients: %v", g.Clients()))
     w.WriteHeader(http.StatusOK)
     fmt.Fprintf(w, "{\"status\":\"ok\"}")
   }

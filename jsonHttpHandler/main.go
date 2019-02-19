@@ -3,6 +3,7 @@ package jsonHttpHandler
 import (
   "fmt"
   "net/http"
+  "database/sql"
   "github.com/go-errors/errors"
 )
 
@@ -20,6 +21,8 @@ type Globals interface {
   Logger() Logger
   Log(string)
   LogErrorWithTrace(string, string)
+  DB(string) *sql.DB
+  Clients() map[string]interface{}
 }
 
 type GlobalsReceivingHandlerFunc func(Globals) http.HandlerFunc
