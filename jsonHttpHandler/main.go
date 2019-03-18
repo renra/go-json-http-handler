@@ -3,7 +3,6 @@ package jsonHttpHandler
 import (
   "fmt"
   "net/http"
-  "database/sql"
   "github.com/renra/go-errtrace/errtrace"
 )
 
@@ -28,8 +27,7 @@ type Globals interface {
   Config() Config
   Logger() Logger
   Log(string)
-  LogErrorWithTrace(string, string)
-  DB(string) *sql.DB
+  LogErrorWithTrace(*errtrace.Error)
   Clients() map[string]interface{}
 }
 
@@ -46,8 +44,7 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
   defer func() {
     if r := recover(); r != nil {
-      err := errtrace.Wrap(r)
-      h.globals.LogErrorWithTrace(err.Error(), err.StringStack())
+      h.globals.LogErrorWithTrace(errtrace.Wrap(r))
 
       w.WriteHeader(http.StatusInternalServerError)
       fmt.Fprintf(w, "{}")

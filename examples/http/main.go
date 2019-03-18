@@ -74,8 +74,8 @@ func (g *Globals) Log(msg string) {
   g.Logger().LogWithSeverity(map[string]string{"msg": msg}, 1)
 }
 
-func (g *Globals) LogErrorWithTrace(msg string, trace string) {
-  g.Logger().LogWithSeverity(map[string]string{"msg": msg, "trace": trace}, 0)
+func (g *Globals) LogErrorWithTrace(e *errtrace.Error) {
+  g.Logger().LogWithSeverity(map[string]string{"msg": e.Error(), "trace": e.StringStack()}, 0)
 }
 
 func (g *Globals) DB(name string) *sql.DB {
