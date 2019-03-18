@@ -6,6 +6,7 @@ import (
   "net/http"
   "database/sql"
   "app/jsonHttpHandler"
+  "github.com/renra/go-errtrace/errtrace"
 )
 
 type Logger struct {
@@ -18,12 +19,44 @@ func (l *Logger) LogWithSeverity(data map[string]string, severity int) {
 type Config struct {
 }
 
-func (c *Config) Get(key string) interface {} {
-  return key
+func (ci *Config) Get(key string) (interface{}, *errtrace.Error) {
+  return key, nil;
 }
 
-func (c *Config) GetString(key string) string {
-  return key
+func (ci *Config) GetP(key string) interface{} {
+  return key;
+}
+
+func (ci *Config) GetString(key string) (string, *errtrace.Error) {
+  return key, nil;
+}
+
+func (ci *Config) GetStringP(key string) string {
+  return key;
+}
+
+func (ci *Config) GetInt(key string) (int, *errtrace.Error) {
+  return 4, nil;
+}
+
+func (ci *Config) GetIntP(key string) int {
+  return 4;
+}
+
+func (ci *Config) GetFloat(key string) (float64, *errtrace.Error) {
+  return 3.14, nil;
+}
+
+func (ci *Config) GetFloatP(key string) float64 {
+  return 3.14;
+}
+
+func (ci *Config) GetBool(key string) (bool, *errtrace.Error) {
+  return true, nil;
+}
+
+func (ci *Config) GetBoolP(key string) bool {
+  return true;
 }
 
 type Globals struct {

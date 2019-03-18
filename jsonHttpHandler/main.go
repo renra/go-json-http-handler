@@ -4,12 +4,20 @@ import (
   "fmt"
   "net/http"
   "database/sql"
-  "github.com/go-errors/errors"
+  "github.com/renra/go-errtrace/errtrace"
 )
 
 type Config interface {
-  Get(string) interface{}
-  GetString(string) string
+  Get(string) (interface{}, *errtrace.Error)
+  GetP(string) interface{}
+  GetString(string) (string, *errtrace.Error)
+  GetStringP(string) string
+  GetInt(string) (int, *errtrace.Error)
+  GetIntP(string) int
+  GetFloat(string) (float64, *errtrace.Error)
+  GetFloatP(string) float64
+  GetBool(string) (bool, *errtrace.Error)
+  GetBoolP(string) bool
 }
 
 type Logger interface {
@@ -38,8 +46,8 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
   defer func() {
     if r := recover(); r != nil {
-      err := errors.Wrap(r, 2)
-      h.globals.LogErrorWithTrace(err.Err.Error(), err.ErrorStack())
+      err := errtrace.Wrap(r)
+      h.globals.LogErrorWithTrace(err.Error(), err.StringStack())
 
       w.WriteHeader(http.StatusInternalServerError)
       fmt.Fprintf(w, "{}")

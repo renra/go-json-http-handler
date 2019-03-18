@@ -24,6 +24,9 @@
 #   go-tests = true
 #   unused-packages = true
 
+[[constraint]]
+  name = "github.com/renra/go-errtrace"
+  version = "1.1.0"
 
 [prune]
   go-tests = true
