@@ -2,14 +2,14 @@
 
 
 [[projects]]
-  name = "github.com/go-errors/errors"
-  packages = ["."]
-  revision = "a6af135bd4e28680facf08a3d206b454abc877a4"
-  version = "v1.0.1"
+  name = "github.com/renra/go-errtrace"
+  packages = ["errtrace"]
+  revision = "2e300f4351eebb9e8068ef7dab8361cac541affd"
+  version = "v1.1.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "15ffc9fb7bdc89010afbc9ed98d45e01cede1559b954afaddd23d5f431ffb377"
+  inputs-digest = "ff477f8ac60143d431812d1edb7875a55ef8dec7ec47924507523aa7497b90c2"
   solver-name = "gps-cdcl"
   solver-version = 1
