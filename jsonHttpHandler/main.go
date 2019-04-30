@@ -2,7 +2,8 @@ package jsonHttpHandler
 
 import (
   "fmt"
-  "regexp"
+  "context"
+  "strings"
   "net/http"
   "github.com/renra/go-errtrace/errtrace"
 )
@@ -72,9 +73,12 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
   for _, routeData := range h.routeMap {
     if routeData.Verb == r.Method {
-      doesRouteMatch, _ := regexp.MatchString(routeData.Pattern, r.URL.Path)
+      doesRouteMatch, pathParams := GetMatchAndPathParams(routeData.Pattern, r.URL.Path)
 
       if doesRouteMatch {
+        ctx := r.Context()
+        r = r.WithContext(context.WithValue(ctx, PathParamsKey, *pathParams))
+
         routeData.Handler(h.globals)(w, r)
         return
       }
@@ -83,6 +87,31 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
   w.WriteHeader(http.StatusNotFound)
   fmt.Fprintf(w, "{}")
+}
+
+func GetMatchAndPathParams(pattern string, urlPath string) (bool, *map[string]string) {
+  patternShards := strings.Split(pattern, "/")
+  pathShards := strings.Split(urlPath, "/")
+
+  if len(patternShards) != len(pathShards) {
+    return false, nil
+  }
+
+  params := make(map[string]string, 0)
+
+  for i, _ := range patternShards {
+    shards := strings.Split(patternShards[i], ":")
+
+    if len(shards) == 1 {
+      if patternShards[i] != pathShards[i] {
+        return false, nil
+      }
+    } else {
+      params[shards[1]] = pathShards[i]
+    }
+  }
+
+  return true, &params
 }
 
 func New(g Globals, routeMap []RouteData) JsonHttpHandler {

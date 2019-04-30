@@ -134,8 +134,10 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
         "/resources/:id",
         func(g jsonHttpHandler.Globals) http.HandlerFunc {
           return func(w http.ResponseWriter, r *http.Request) {
+            id := jsonHttpHandler.GetPathParamP(r.Context(), "id")
+
             w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, GetDetailBody)
+            fmt.Fprintf(w, fmt.Sprintf("%s %s", GetDetailBody, id))
           }
         },
         []jsonHttpHandler.Middleware{},
@@ -145,8 +147,10 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
         "/resources/:id",
         func(g jsonHttpHandler.Globals) http.HandlerFunc {
           return func(w http.ResponseWriter, r *http.Request) {
+            id := jsonHttpHandler.GetPathParamP(r.Context(), "id")
+
             w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, PatchUpdateBody)
+            fmt.Fprintf(w, fmt.Sprintf("%s %s", PatchUpdateBody, id))
           }
         },
         []jsonHttpHandler.Middleware{},
@@ -156,8 +160,10 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
         "/resources/:id",
         func(g jsonHttpHandler.Globals) http.HandlerFunc {
           return func(w http.ResponseWriter, r *http.Request) {
+            id := jsonHttpHandler.GetPathParamP(r.Context(), "id")
+
             w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, DeleteDestroyBody)
+            fmt.Fprintf(w, fmt.Sprintf("%s %s", DeleteDestroyBody, id))
           }
         },
         []jsonHttpHandler.Middleware{},
