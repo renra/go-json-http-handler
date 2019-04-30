@@ -2,6 +2,7 @@ package jsonHttpHandler
 
 import (
   "fmt"
+  "regexp"
   "net/http"
   "github.com/renra/go-errtrace/errtrace"
 )
@@ -33,9 +34,27 @@ type Globals interface {
 
 type GlobalsReceivingHandlerFunc func(Globals) http.HandlerFunc
 
+type Middleware func(http.HandlerFunc) http.HandlerFunc
+
+type RouteData struct {
+  Verb string
+  Middlewares []Middleware
+  Handler GlobalsReceivingHandlerFunc
+  Pattern string
+}
+
+func NewRouteData(verb string, pattern string, handler GlobalsReceivingHandlerFunc, middlewares []Middleware) RouteData {
+  return RouteData{
+    Verb: verb,
+    Pattern: pattern,
+    Handler: handler,
+    Middlewares: middlewares,
+  }
+}
+
 type JsonHttpHandler struct {
   globals Globals
-  handlers map[string]GlobalsReceivingHandlerFunc
+  routeMap []RouteData
 }
 
 func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -51,16 +70,21 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     }
   }()
 
-  handler := h.handlers[r.URL.Path]
+  for _, routeData := range h.routeMap {
+    if routeData.Verb == r.Method {
+      doesRouteMatch, _ := regexp.MatchString(routeData.Pattern, r.URL.Path)
 
-  if handler != nil {
-    handler(h.globals)(w, r)
-  } else {
-    w.WriteHeader(http.StatusNotFound)
-    fmt.Fprintf(w, "{}")
+      if doesRouteMatch {
+        routeData.Handler(h.globals)(w, r)
+        return
+      }
+    }
   }
+
+  w.WriteHeader(http.StatusNotFound)
+  fmt.Fprintf(w, "{}")
 }
 
-func New(g Globals, handlers map[string]GlobalsReceivingHandlerFunc) JsonHttpHandler {
-  return JsonHttpHandler{globals: g, handlers: handlers}
+func New(g Globals, routeMap []RouteData) JsonHttpHandler {
+  return JsonHttpHandler{globals: g, routeMap: routeMap}
 }

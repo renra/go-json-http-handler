@@ -106,42 +106,72 @@ type JsonHttpApiSuite struct {
 func (suite *JsonHttpApiSuite) SetupSuite() {
   handler := jsonHttpHandler.New(
     &Globals{},
-    map[string]jsonHttpHandler.GlobalsReceivingHandlerFunc{
-      "/resources": func(g jsonHttpHandler.Globals) http.HandlerFunc {
-        return func(w http.ResponseWriter, r *http.Request) {
-          w.WriteHeader(http.StatusOK)
-          fmt.Fprintf(w, GetIndexBody)
-        }
-      },
-      "/resource": func(g jsonHttpHandler.Globals) http.HandlerFunc {
-        return func(w http.ResponseWriter, r *http.Request) {
-          w.WriteHeader(http.StatusOK)
-          fmt.Fprintf(w, GetDetailBody)
-        }
-      },
-      "/resources_create": func(g jsonHttpHandler.Globals) http.HandlerFunc {
-        return func(w http.ResponseWriter, r *http.Request) {
-          w.WriteHeader(http.StatusCreated)
-          fmt.Fprintf(w, PostCreateBody)
-        }
-      },
-      "/resource_update": func(g jsonHttpHandler.Globals) http.HandlerFunc {
-        return func(w http.ResponseWriter, r *http.Request) {
-          w.WriteHeader(http.StatusOK)
-          fmt.Fprintf(w, PatchUpdateBody)
-        }
-      },
-      "/resource_delete": func(g jsonHttpHandler.Globals) http.HandlerFunc {
-        return func(w http.ResponseWriter, r *http.Request) {
-          w.WriteHeader(http.StatusOK)
-          fmt.Fprintf(w, DeleteDestroyBody)
-        }
-      },
-      "/error": func(g jsonHttpHandler.Globals) http.HandlerFunc {
-        return func(w http.ResponseWriter, r *http.Request) {
-          panic("The impossible has happened")
-        }
-      },
+    []jsonHttpHandler.RouteData{
+      jsonHttpHandler.NewRouteData(
+        http.MethodGet,
+        "/resources",
+        func(g jsonHttpHandler.Globals) http.HandlerFunc {
+          return func(w http.ResponseWriter, r *http.Request) {
+            w.WriteHeader(http.StatusOK)
+            fmt.Fprintf(w, GetIndexBody)
+          }
+        },
+        []jsonHttpHandler.Middleware{},
+      ),
+      jsonHttpHandler.NewRouteData(
+        http.MethodPost,
+        "/resources",
+        func(g jsonHttpHandler.Globals) http.HandlerFunc {
+          return func(w http.ResponseWriter, r *http.Request) {
+            w.WriteHeader(http.StatusCreated)
+            fmt.Fprintf(w, PostCreateBody)
+          }
+        },
+        []jsonHttpHandler.Middleware{},
+      ),
+      jsonHttpHandler.NewRouteData(
+        http.MethodGet,
+        "/resource",
+        func(g jsonHttpHandler.Globals) http.HandlerFunc {
+          return func(w http.ResponseWriter, r *http.Request) {
+            w.WriteHeader(http.StatusOK)
+            fmt.Fprintf(w, GetDetailBody)
+          }
+        },
+        []jsonHttpHandler.Middleware{},
+      ),
+      jsonHttpHandler.NewRouteData(
+        http.MethodPatch,
+        "/resource",
+        func(g jsonHttpHandler.Globals) http.HandlerFunc {
+          return func(w http.ResponseWriter, r *http.Request) {
+            w.WriteHeader(http.StatusOK)
+            fmt.Fprintf(w, PatchUpdateBody)
+          }
+        },
+        []jsonHttpHandler.Middleware{},
+      ),
+      jsonHttpHandler.NewRouteData(
+        http.MethodDelete,
+        "/resource",
+        func(g jsonHttpHandler.Globals) http.HandlerFunc {
+          return func(w http.ResponseWriter, r *http.Request) {
+            w.WriteHeader(http.StatusOK)
+            fmt.Fprintf(w, DeleteDestroyBody)
+          }
+        },
+        []jsonHttpHandler.Middleware{},
+      ),
+      jsonHttpHandler.NewRouteData(
+        http.MethodGet,
+        "/error",
+        func(g jsonHttpHandler.Globals) http.HandlerFunc {
+          return func(w http.ResponseWriter, r *http.Request) {
+            panic("The impossible has happened")
+          }
+        },
+        []jsonHttpHandler.Middleware{},
+      ),
     },
   )
 
@@ -181,7 +211,7 @@ func (suite *JsonHttpApiSuite) TestDetailRoute() {
 }
 
 func (suite *JsonHttpApiSuite) TestCreateRoute() {
-  request, _ := http.NewRequest("POST", "/resources_create", nil)
+  request, _ := http.NewRequest("POST", "/resources", nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -197,7 +227,7 @@ func (suite *JsonHttpApiSuite) TestCreateRoute() {
 }
 
 func (suite *JsonHttpApiSuite) TestUpdateRoute() {
-  request, _ := http.NewRequest("PATCH", "/resource_update", nil)
+  request, _ := http.NewRequest("PATCH", "/resource", nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -213,7 +243,7 @@ func (suite *JsonHttpApiSuite) TestUpdateRoute() {
 }
 
 func (suite *JsonHttpApiSuite) TestDestroyRoute() {
-  request, _ := http.NewRequest("DELETE", "/resource_delete", nil)
+  request, _ := http.NewRequest("DELETE", "/resource", nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
