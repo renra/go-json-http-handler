@@ -64,4 +64,3 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func New(g Globals, handlers map[string]GlobalsReceivingHandlerFunc) JsonHttpHandler {
   return JsonHttpHandler{globals: g, handlers: handlers}
 }
-
