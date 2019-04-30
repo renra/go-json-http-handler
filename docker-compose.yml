@@ -11,5 +11,6 @@ services:
     volumes:
       - ./jsonHttpHandler/:/go/src/app/jsonHttpHandler/
       - ./examples/:/go/src/app/examples/
+      - ./test/:/go/src/app/test/
       - ./Makefile:/go/src/app/Makefile
 

@@ -6,6 +6,7 @@ dep:
 http_example:
 	go run ${SOURCES}/examples/http/main.go
 
+.PHONY: test
 .DEFAULT_GOAL := test
-test: http_example
-
+test:
+	go test ./test... -count 1 -v
