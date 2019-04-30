@@ -131,7 +131,7 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
       ),
       jsonHttpHandler.NewRouteData(
         http.MethodGet,
-        "/resource",
+        "/resources/:id",
         func(g jsonHttpHandler.Globals) http.HandlerFunc {
           return func(w http.ResponseWriter, r *http.Request) {
             w.WriteHeader(http.StatusOK)
@@ -142,7 +142,7 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
       ),
       jsonHttpHandler.NewRouteData(
         http.MethodPatch,
-        "/resource",
+        "/resources/:id",
         func(g jsonHttpHandler.Globals) http.HandlerFunc {
           return func(w http.ResponseWriter, r *http.Request) {
             w.WriteHeader(http.StatusOK)
@@ -153,7 +153,7 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
       ),
       jsonHttpHandler.NewRouteData(
         http.MethodDelete,
-        "/resource",
+        "/resources/:id",
         func(g jsonHttpHandler.Globals) http.HandlerFunc {
           return func(w http.ResponseWriter, r *http.Request) {
             w.WriteHeader(http.StatusOK)
@@ -195,7 +195,8 @@ func (suite *JsonHttpApiSuite) TestIndexRoute() {
 }
 
 func (suite *JsonHttpApiSuite) TestDetailRoute() {
-  request, _ := http.NewRequest("GET", "/resource", nil)
+  id := 12
+  request, _ := http.NewRequest("GET", fmt.Sprintf("/resources/%d", id), nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -207,7 +208,7 @@ func (suite *JsonHttpApiSuite) TestDetailRoute() {
   )
 
   assert.Equal(suite.T(), http.StatusOK, recorder.Code)
-  assert.Equal(suite.T(), GetDetailBody, recorder.Body.String())
+  assert.Equal(suite.T(), fmt.Sprintf("%s %d", GetDetailBody, id), recorder.Body.String())
 }
 
 func (suite *JsonHttpApiSuite) TestCreateRoute() {
@@ -227,7 +228,8 @@ func (suite *JsonHttpApiSuite) TestCreateRoute() {
 }
 
 func (suite *JsonHttpApiSuite) TestUpdateRoute() {
-  request, _ := http.NewRequest("PATCH", "/resource", nil)
+  id := 12
+  request, _ := http.NewRequest("PATCH", fmt.Sprintf("/resources/%d", id), nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -239,11 +241,12 @@ func (suite *JsonHttpApiSuite) TestUpdateRoute() {
   )
 
   assert.Equal(suite.T(), http.StatusOK, recorder.Code)
-  assert.Equal(suite.T(), PatchUpdateBody, recorder.Body.String())
+  assert.Equal(suite.T(), fmt.Sprintf("%s %d", PatchUpdateBody, id), recorder.Body.String())
 }
 
 func (suite *JsonHttpApiSuite) TestDestroyRoute() {
-  request, _ := http.NewRequest("DELETE", "/resource", nil)
+  id := 12
+  request, _ := http.NewRequest("DELETE", fmt.Sprintf("/resources/%d", id), nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -255,7 +258,7 @@ func (suite *JsonHttpApiSuite) TestDestroyRoute() {
   )
 
   assert.Equal(suite.T(), http.StatusOK, recorder.Code)
-  assert.Equal(suite.T(), DeleteDestroyBody, recorder.Body.String())
+  assert.Equal(suite.T(), fmt.Sprintf("%s %d", DeleteDestroyBody, id), recorder.Body.String())
 }
 
 func (suite *JsonHttpApiSuite) TestNotFound() {
