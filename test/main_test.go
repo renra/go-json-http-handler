@@ -104,7 +104,7 @@ type JsonHttpApiSuite struct {
 }
 
 func (suite *JsonHttpApiSuite) SetupSuite() {
-  suite.handler = jsonHttpHandler.New(
+  handler := jsonHttpHandler.New(
     &Globals{},
     map[string]jsonHttpHandler.GlobalsReceivingHandlerFunc{
       "/resources": func(g jsonHttpHandler.Globals) http.HandlerFunc {
@@ -144,6 +144,8 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
       },
     },
   )
+
+  suite.handler = &handler
 }
 
 func (suite *JsonHttpApiSuite) TestIndexRoute() {
