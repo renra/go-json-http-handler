@@ -114,6 +114,6 @@ func GetMatchAndPathParams(pattern string, urlPath string) (bool, *map[string]st
   return true, &params
 }
 
-func New(g Globals, routeMap []RouteData) JsonHttpHandler {
-  return JsonHttpHandler{globals: g, routeMap: routeMap}
+func New(g Globals, routeMap []RouteData) *JsonHttpHandler {
+  return &JsonHttpHandler{globals: g, routeMap: routeMap}
 }

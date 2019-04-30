@@ -104,7 +104,7 @@ type JsonHttpApiSuite struct {
 }
 
 func (suite *JsonHttpApiSuite) SetupSuite() {
-  handler := jsonHttpHandler.New(
+  suite.handler = jsonHttpHandler.New(
     &Globals{},
     []jsonHttpHandler.RouteData{
       jsonHttpHandler.NewRouteData(
@@ -180,8 +180,6 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
       ),
     },
   )
-
-  suite.handler = &handler
 }
 
 func (suite *JsonHttpApiSuite) TestIndexRoute() {
