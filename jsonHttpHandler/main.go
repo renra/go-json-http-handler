@@ -5,6 +5,7 @@ import (
   "context"
   "strings"
   "net/http"
+  "io/ioutil"
   "github.com/renra/go-errtrace/errtrace"
 )
 
@@ -71,6 +72,19 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     }
   }()
 
+  if r.Body != nil {
+    requestBody, readingError := ioutil.ReadAll(r.Body)
+
+    if readingError != nil {
+      h.globals.LogErrorWithTrace(errtrace.Wrap(readingError))
+    } else {
+      ctx := r.Context()
+      payload := string(requestBody)
+      r = r.WithContext(context.WithValue(ctx, "payload", &payload))
+    }
+
+  }
+
   for _, routeData := range h.routeMap {
     if routeData.Verb == r.Method {
       doesRouteMatch, pathParams := GetMatchAndPathParams(routeData.Pattern, r.URL.Path)
@@ -79,7 +93,22 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         ctx := r.Context()
         r = r.WithContext(context.WithValue(ctx, PathParamsKey, *pathParams))
 
-        routeData.Handler(h.globals)(w, r)
+        handler := routeData.Handler(h.globals)
+        middlewares := make([]Middleware, len(routeData.Middlewares))
+
+        copy(middlewares, routeData.Middlewares)
+
+        for i := len(middlewares)/2-1; i >= 0; i-- {
+          idx := len(middlewares)-1-i
+          middlewares[i], middlewares[idx] = middlewares[idx], middlewares[i]
+        }
+
+        for _, mw := range middlewares {
+          handler = mw(handler)
+        }
+
+        handler(w, r)
+
         return
       }
     }

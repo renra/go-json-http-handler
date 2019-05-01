@@ -5,7 +5,6 @@ import (
   "net/http"
   "strings"
   "testing"
-  "io/ioutil"
   "net/http/httptest"
   "app/jsonHttpHandler"
   "github.com/stretchr/testify/suite"
@@ -109,13 +108,18 @@ type JsonHttpApiSuite struct {
 
 func requirePayload(next http.HandlerFunc) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
-    body, _ := ioutil.ReadAll(r.Body)
+    payload, ok := r.Context().Value("payload").(*string)
 
-    if string(body) != "" {
-      next(w, r)
-    } else {
+    if !ok || payload == nil {
       w.WriteHeader(http.StatusUnauthorized)
       fmt.Fprintf(w, "")
+    } else {
+      if *payload != "" {
+        next(w, r)
+      } else {
+        w.WriteHeader(http.StatusUnauthorized)
+        fmt.Fprintf(w, "")
+      }
     }
   }
 }
@@ -123,13 +127,18 @@ func requirePayload(next http.HandlerFunc) http.HandlerFunc {
 func requireExactPayload(pattern string) jsonHttpHandler.Middleware {
   return func(next http.HandlerFunc) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-      body, _ := ioutil.ReadAll(r.Body)
+      payload, ok := r.Context().Value("payload").(*string)
 
-      if string(body) == pattern {
-        next(w, r)
-      } else {
+      if !ok || payload == nil {
         w.WriteHeader(http.StatusBadRequest)
         fmt.Fprintf(w, "")
+      } else {
+        if *payload == pattern {
+          next(w, r)
+        } else {
+          w.WriteHeader(http.StatusBadRequest)
+          fmt.Fprintf(w, "")
+        }
       }
     }
   }
