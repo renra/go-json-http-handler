@@ -3,8 +3,9 @@ package test
 import (
   "fmt"
   "net/http"
-  "net/http/httptest"
+  "strings"
   "testing"
+  "net/http/httptest"
   "app/jsonHttpHandler"
   "github.com/stretchr/testify/suite"
   "github.com/stretchr/testify/assert"
@@ -88,19 +89,59 @@ func TestJsonHttpApi(t *testing.T) {
 }
 
 const (
-  GetIndexBody = "GET resources"
-  PostCreateBody = "POST resources"
-  GetDetailBody = "GET resource"
-  PatchUpdateBody = "PATCH resource"
-  DeleteDestroyBody = "DELETE resource"
-  EmptyBody = "{}"
-  JsonContentTypeHeader = "Content-Type"
-  JsonContentType = "application/json; charset=utf-8"
+  getIndexBody = "GET resources"
+  postCreateBody = "POST resources"
+  getDetailBody = "GET resource"
+  patchUpdateBody = "PATCH resource"
+  deleteDestroyBody = "DELETE resource"
+  emptyBody = "{}"
+  jsonContentTypeHeader = "Content-Type"
+  jsonContentType = "application/json; charset=utf-8"
+  wantedPayload = "foo"
+  middlewaresBody = "middlewares"
 )
 
 type JsonHttpApiSuite struct {
   suite.Suite
   handler *jsonHttpHandler.JsonHttpHandler
+}
+
+func requirePayload(g jsonHttpHandler.Globals, next http.HandlerFunc) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    payload, _ := r.Context().Value(jsonHttpHandler.PayloadKey).(*string)
+
+    if payload == nil {
+      w.WriteHeader(http.StatusUnauthorized)
+      fmt.Fprintf(w, "")
+    } else {
+      if *payload != "" {
+        next(w, r)
+      } else {
+        w.WriteHeader(http.StatusUnauthorized)
+        fmt.Fprintf(w, "")
+      }
+    }
+  }
+}
+
+func requireExactPayload(pattern string) jsonHttpHandler.Middleware {
+  return func(g jsonHttpHandler.Globals, next http.HandlerFunc) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+      payload := r.Context().Value(jsonHttpHandler.PayloadKey).(*string)
+
+      if payload == nil {
+        w.WriteHeader(http.StatusBadRequest)
+        fmt.Fprintf(w, "")
+      } else {
+        if *payload == pattern {
+          next(w, r)
+        } else {
+          w.WriteHeader(http.StatusBadRequest)
+          fmt.Fprintf(w, "")
+        }
+      }
+    }
+  }
 }
 
 func (suite *JsonHttpApiSuite) SetupSuite() {
@@ -113,7 +154,7 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
         func(g jsonHttpHandler.Globals) http.HandlerFunc {
           return func(w http.ResponseWriter, r *http.Request) {
             w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, GetIndexBody)
+            fmt.Fprintf(w, getIndexBody)
           }
         },
         []jsonHttpHandler.Middleware{},
@@ -124,7 +165,7 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
         func(g jsonHttpHandler.Globals) http.HandlerFunc {
           return func(w http.ResponseWriter, r *http.Request) {
             w.WriteHeader(http.StatusCreated)
-            fmt.Fprintf(w, PostCreateBody)
+            fmt.Fprintf(w, postCreateBody)
           }
         },
         []jsonHttpHandler.Middleware{},
@@ -137,7 +178,7 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
             id := jsonHttpHandler.GetPathParamP(r.Context(), "id")
 
             w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, fmt.Sprintf("%s %s", GetDetailBody, id))
+            fmt.Fprintf(w, fmt.Sprintf("%s %s", getDetailBody, id))
           }
         },
         []jsonHttpHandler.Middleware{},
@@ -150,7 +191,7 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
             id := jsonHttpHandler.GetPathParamP(r.Context(), "id")
 
             w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, fmt.Sprintf("%s %s", PatchUpdateBody, id))
+            fmt.Fprintf(w, fmt.Sprintf("%s %s", patchUpdateBody, id))
           }
         },
         []jsonHttpHandler.Middleware{},
@@ -163,7 +204,7 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
             id := jsonHttpHandler.GetPathParamP(r.Context(), "id")
 
             w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, fmt.Sprintf("%s %s", DeleteDestroyBody, id))
+            fmt.Fprintf(w, fmt.Sprintf("%s %s", deleteDestroyBody, id))
           }
         },
         []jsonHttpHandler.Middleware{},
@@ -178,6 +219,20 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
         },
         []jsonHttpHandler.Middleware{},
       ),
+      jsonHttpHandler.NewRouteData(
+        http.MethodPost,
+        "/middlewares",
+        func(g jsonHttpHandler.Globals) http.HandlerFunc {
+          return func(w http.ResponseWriter, r *http.Request) {
+            w.WriteHeader(http.StatusOK)
+            fmt.Fprintf(w, middlewaresBody)
+          }
+        },
+        []jsonHttpHandler.Middleware{
+          requirePayload,
+          requireExactPayload(wantedPayload),
+        },
+      ),
     },
   )
 }
@@ -190,12 +245,12 @@ func (suite *JsonHttpApiSuite) TestIndexRoute() {
 
   assert.Equal(
     suite.T(),
-    []string([]string{JsonContentType}),
-    recorder.Header()[JsonContentTypeHeader],
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
   )
 
   assert.Equal(suite.T(), http.StatusOK, recorder.Code)
-  assert.Equal(suite.T(), GetIndexBody, recorder.Body.String())
+  assert.Equal(suite.T(), getIndexBody, recorder.Body.String())
 }
 
 func (suite *JsonHttpApiSuite) TestDetailRoute() {
@@ -207,12 +262,12 @@ func (suite *JsonHttpApiSuite) TestDetailRoute() {
 
   assert.Equal(
     suite.T(),
-    []string([]string{JsonContentType}),
-    recorder.Header()[JsonContentTypeHeader],
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
   )
 
   assert.Equal(suite.T(), http.StatusOK, recorder.Code)
-  assert.Equal(suite.T(), fmt.Sprintf("%s %d", GetDetailBody, id), recorder.Body.String())
+  assert.Equal(suite.T(), fmt.Sprintf("%s %d", getDetailBody, id), recorder.Body.String())
 }
 
 func (suite *JsonHttpApiSuite) TestCreateRoute() {
@@ -223,12 +278,12 @@ func (suite *JsonHttpApiSuite) TestCreateRoute() {
 
   assert.Equal(
     suite.T(),
-    []string([]string{JsonContentType}),
-    recorder.Header()[JsonContentTypeHeader],
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
   )
 
   assert.Equal(suite.T(), http.StatusCreated, recorder.Code)
-  assert.Equal(suite.T(), PostCreateBody, recorder.Body.String())
+  assert.Equal(suite.T(), postCreateBody, recorder.Body.String())
 }
 
 func (suite *JsonHttpApiSuite) TestUpdateRoute() {
@@ -240,12 +295,12 @@ func (suite *JsonHttpApiSuite) TestUpdateRoute() {
 
   assert.Equal(
     suite.T(),
-    []string([]string{JsonContentType}),
-    recorder.Header()[JsonContentTypeHeader],
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
   )
 
   assert.Equal(suite.T(), http.StatusOK, recorder.Code)
-  assert.Equal(suite.T(), fmt.Sprintf("%s %d", PatchUpdateBody, id), recorder.Body.String())
+  assert.Equal(suite.T(), fmt.Sprintf("%s %d", patchUpdateBody, id), recorder.Body.String())
 }
 
 func (suite *JsonHttpApiSuite) TestDestroyRoute() {
@@ -257,12 +312,12 @@ func (suite *JsonHttpApiSuite) TestDestroyRoute() {
 
   assert.Equal(
     suite.T(),
-    []string([]string{JsonContentType}),
-    recorder.Header()[JsonContentTypeHeader],
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
   )
 
   assert.Equal(suite.T(), http.StatusOK, recorder.Code)
-  assert.Equal(suite.T(), fmt.Sprintf("%s %d", DeleteDestroyBody, id), recorder.Body.String())
+  assert.Equal(suite.T(), fmt.Sprintf("%s %d", deleteDestroyBody, id), recorder.Body.String())
 }
 
 func (suite *JsonHttpApiSuite) TestNotFound() {
@@ -273,12 +328,12 @@ func (suite *JsonHttpApiSuite) TestNotFound() {
 
   assert.Equal(
     suite.T(),
-    []string([]string{JsonContentType}),
-    recorder.Header()[JsonContentTypeHeader],
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
   )
 
   assert.Equal(suite.T(), http.StatusNotFound, recorder.Code)
-  assert.Equal(suite.T(), EmptyBody, recorder.Body.String())
+  assert.Equal(suite.T(), emptyBody, recorder.Body.String())
 }
 
 func (suite *JsonHttpApiSuite) TestInternalServerError() {
@@ -289,10 +344,58 @@ func (suite *JsonHttpApiSuite) TestInternalServerError() {
 
   assert.Equal(
     suite.T(),
-    []string([]string{JsonContentType}),
-    recorder.Header()[JsonContentTypeHeader],
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
   )
 
   assert.Equal(suite.T(), http.StatusInternalServerError, recorder.Code)
-  assert.Equal(suite.T(), EmptyBody, recorder.Body.String())
+  assert.Equal(suite.T(), emptyBody, recorder.Body.String())
+}
+
+func (suite *JsonHttpApiSuite) TestMiddlewares() {
+  request, _ := http.NewRequest("POST", "/middlewares", strings.NewReader(wantedPayload))
+  recorder := httptest.NewRecorder()
+
+  suite.handler.ServeHTTP(recorder, request)
+
+  assert.Equal(
+    suite.T(),
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
+  )
+
+  assert.Equal(suite.T(), http.StatusOK, recorder.Code)
+  assert.Equal(suite.T(), middlewaresBody, recorder.Body.String())
+}
+
+func (suite *JsonHttpApiSuite) TestMiddlewares_PayloadMismatch() {
+  request, _ := http.NewRequest("POST", "/middlewares", strings.NewReader("whatever"))
+  recorder := httptest.NewRecorder()
+
+  suite.handler.ServeHTTP(recorder, request)
+
+  assert.Equal(
+    suite.T(),
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
+  )
+
+  assert.Equal(suite.T(), http.StatusBadRequest, recorder.Code)
+  assert.Equal(suite.T(), "", recorder.Body.String())
+}
+
+func (suite *JsonHttpApiSuite) TestMiddlewares_NoPayload() {
+  request, _ := http.NewRequest("POST", "/middlewares", nil)
+  recorder := httptest.NewRecorder()
+
+  suite.handler.ServeHTTP(recorder, request)
+
+  assert.Equal(
+    suite.T(),
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
+  )
+
+  assert.Equal(suite.T(), http.StatusUnauthorized, recorder.Code)
+  assert.Equal(suite.T(), "", recorder.Body.String())
 }
