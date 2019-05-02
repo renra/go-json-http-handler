@@ -36,7 +36,7 @@ type Globals interface {
 
 type GlobalsReceivingHandlerFunc func(Globals) http.HandlerFunc
 
-type Middleware func(http.HandlerFunc) http.HandlerFunc
+type Middleware func(Globals, http.HandlerFunc) http.HandlerFunc
 
 type RouteData struct {
   Verb string
@@ -104,7 +104,7 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         }
 
         for _, mw := range middlewares {
-          handler = mw(handler)
+          handler = mw(h.globals, handler)
         }
 
         handler(w, r)

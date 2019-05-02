@@ -106,7 +106,7 @@ type JsonHttpApiSuite struct {
   handler *jsonHttpHandler.JsonHttpHandler
 }
 
-func requirePayload(next http.HandlerFunc) http.HandlerFunc {
+func requirePayload(g jsonHttpHandler.Globals, next http.HandlerFunc) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
     payload, ok := r.Context().Value("payload").(*string)
 
@@ -125,7 +125,7 @@ func requirePayload(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func requireExactPayload(pattern string) jsonHttpHandler.Middleware {
-  return func(next http.HandlerFunc) http.HandlerFunc {
+  return func(g jsonHttpHandler.Globals, next http.HandlerFunc) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
       payload, ok := r.Context().Value("payload").(*string)
 
