@@ -16,7 +16,6 @@ type Logger struct {
 }
 
 func (l *Logger) LogWithSeverity(data map[string]string, severity int) {
-  fmt.Println(fmt.Sprintf("%v", data))
 }
 
 type Config struct {
