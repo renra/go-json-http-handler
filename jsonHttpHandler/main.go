@@ -72,18 +72,21 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     }
   }()
 
+  ctx := r.Context()
+  var payload *string = nil
+
   if r.Body != nil {
     requestBody, readingError := ioutil.ReadAll(r.Body)
 
     if readingError != nil {
       h.globals.LogErrorWithTrace(errtrace.Wrap(readingError))
     } else {
-      ctx := r.Context()
-      payload := string(requestBody)
-      r = r.WithContext(context.WithValue(ctx, PayloadKey, &payload))
+      p := string(requestBody)
+      payload = &p
     }
-
   }
+
+  r = r.WithContext(context.WithValue(ctx, PayloadKey, payload))
 
   for _, routeData := range h.routeMap {
     if routeData.Verb == r.Method {

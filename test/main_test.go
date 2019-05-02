@@ -16,6 +16,7 @@ type Logger struct {
 }
 
 func (l *Logger) LogWithSeverity(data map[string]string, severity int) {
+  fmt.Println(fmt.Sprintf("%v", data))
 }
 
 type Config struct {
@@ -108,9 +109,9 @@ type JsonHttpApiSuite struct {
 
 func requirePayload(g jsonHttpHandler.Globals, next http.HandlerFunc) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
-    payload, ok := r.Context().Value(jsonHttpHandler.PayloadKey).(*string)
+    payload, _ := r.Context().Value(jsonHttpHandler.PayloadKey).(*string)
 
-    if !ok || payload == nil {
+    if payload == nil {
       w.WriteHeader(http.StatusUnauthorized)
       fmt.Fprintf(w, "")
     } else {
@@ -127,9 +128,9 @@ func requirePayload(g jsonHttpHandler.Globals, next http.HandlerFunc) http.Handl
 func requireExactPayload(pattern string) jsonHttpHandler.Middleware {
   return func(g jsonHttpHandler.Globals, next http.HandlerFunc) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-      payload, ok := r.Context().Value(jsonHttpHandler.PayloadKey).(*string)
+      payload := r.Context().Value(jsonHttpHandler.PayloadKey).(*string)
 
-      if !ok || payload == nil {
+      if payload == nil {
         w.WriteHeader(http.StatusBadRequest)
         fmt.Fprintf(w, "")
       } else {
