@@ -108,7 +108,7 @@ type JsonHttpApiSuite struct {
 
 func requirePayload(g jsonHttpHandler.Globals, next http.HandlerFunc) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
-    payload, ok := r.Context().Value("payload").(*string)
+    payload, ok := r.Context().Value(jsonHttpHandler.PayloadKey).(*string)
 
     if !ok || payload == nil {
       w.WriteHeader(http.StatusUnauthorized)
@@ -127,7 +127,7 @@ func requirePayload(g jsonHttpHandler.Globals, next http.HandlerFunc) http.Handl
 func requireExactPayload(pattern string) jsonHttpHandler.Middleware {
   return func(g jsonHttpHandler.Globals, next http.HandlerFunc) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-      payload, ok := r.Context().Value("payload").(*string)
+      payload, ok := r.Context().Value(jsonHttpHandler.PayloadKey).(*string)
 
       if !ok || payload == nil {
         w.WriteHeader(http.StatusBadRequest)

@@ -80,7 +80,7 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     } else {
       ctx := r.Context()
       payload := string(requestBody)
-      r = r.WithContext(context.WithValue(ctx, "payload", &payload))
+      r = r.WithContext(context.WithValue(ctx, PayloadKey, &payload))
     }
 
   }

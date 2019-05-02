@@ -6,7 +6,10 @@ import (
   "github.com/renra/go-errtrace/errtrace"
 )
 
-const PathParamsKey = "path_params"
+const (
+  PathParamsKey = "path_params"
+  PayloadKey = "payload"
+)
 
 func GetPathParam(ctx context.Context, key string) (*string, *errtrace.Error) {
   urlParams, ok := ctx.Value(PathParamsKey).(map[string]string)
