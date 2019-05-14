@@ -144,7 +144,7 @@ func requireExactPayload(pattern string) jsonHttpHandler.Middleware {
   }
 }
 
-func (suite *JsonHttpApiSuite) SetupSuite() {
+func (suite *JsonHttpApiSuite) SetupTest() {
   suite.handler = jsonHttpHandler.New(
     &Globals{},
     []jsonHttpHandler.RouteData{
@@ -238,7 +238,7 @@ func (suite *JsonHttpApiSuite) SetupSuite() {
 }
 
 func (suite *JsonHttpApiSuite) TestIndexRoute() {
-  request, _ := http.NewRequest("GET", "/resources", nil)
+  request, _ := http.NewRequest(http.MethodGet, "/resources", nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -255,7 +255,7 @@ func (suite *JsonHttpApiSuite) TestIndexRoute() {
 
 func (suite *JsonHttpApiSuite) TestDetailRoute() {
   id := 12
-  request, _ := http.NewRequest("GET", fmt.Sprintf("/resources/%d", id), nil)
+  request, _ := http.NewRequest(http.MethodGet, fmt.Sprintf("/resources/%d", id), nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -271,7 +271,7 @@ func (suite *JsonHttpApiSuite) TestDetailRoute() {
 }
 
 func (suite *JsonHttpApiSuite) TestCreateRoute() {
-  request, _ := http.NewRequest("POST", "/resources", nil)
+  request, _ := http.NewRequest(http.MethodPost, "/resources", nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -288,7 +288,7 @@ func (suite *JsonHttpApiSuite) TestCreateRoute() {
 
 func (suite *JsonHttpApiSuite) TestUpdateRoute() {
   id := 12
-  request, _ := http.NewRequest("PATCH", fmt.Sprintf("/resources/%d", id), nil)
+  request, _ := http.NewRequest(http.MethodPatch, fmt.Sprintf("/resources/%d", id), nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -305,7 +305,7 @@ func (suite *JsonHttpApiSuite) TestUpdateRoute() {
 
 func (suite *JsonHttpApiSuite) TestDestroyRoute() {
   id := 12
-  request, _ := http.NewRequest("DELETE", fmt.Sprintf("/resources/%d", id), nil)
+  request, _ := http.NewRequest(http.MethodDelete, fmt.Sprintf("/resources/%d", id), nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -321,7 +321,7 @@ func (suite *JsonHttpApiSuite) TestDestroyRoute() {
 }
 
 func (suite *JsonHttpApiSuite) TestNotFound() {
-  request, _ := http.NewRequest("GET", "/unknown_url", nil)
+  request, _ := http.NewRequest(http.MethodGet, "/unknown_url", nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -337,7 +337,7 @@ func (suite *JsonHttpApiSuite) TestNotFound() {
 }
 
 func (suite *JsonHttpApiSuite) TestInternalServerError() {
-  request, _ := http.NewRequest("GET", "/error", nil)
+  request, _ := http.NewRequest(http.MethodGet, "/error", nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -353,7 +353,7 @@ func (suite *JsonHttpApiSuite) TestInternalServerError() {
 }
 
 func (suite *JsonHttpApiSuite) TestMiddlewares() {
-  request, _ := http.NewRequest("POST", "/middlewares", strings.NewReader(wantedPayload))
+  request, _ := http.NewRequest(http.MethodPost, "/middlewares", strings.NewReader(wantedPayload))
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -369,7 +369,7 @@ func (suite *JsonHttpApiSuite) TestMiddlewares() {
 }
 
 func (suite *JsonHttpApiSuite) TestMiddlewares_PayloadMismatch() {
-  request, _ := http.NewRequest("POST", "/middlewares", strings.NewReader("whatever"))
+  request, _ := http.NewRequest(http.MethodPost, "/middlewares", strings.NewReader("whatever"))
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
@@ -385,7 +385,7 @@ func (suite *JsonHttpApiSuite) TestMiddlewares_PayloadMismatch() {
 }
 
 func (suite *JsonHttpApiSuite) TestMiddlewares_NoPayload() {
-  request, _ := http.NewRequest("POST", "/middlewares", nil)
+  request, _ := http.NewRequest(http.MethodPost, "/middlewares", nil)
   recorder := httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
