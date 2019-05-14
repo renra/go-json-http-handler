@@ -26,6 +26,13 @@ func corsNoop(g Globals) http.HandlerFunc {
   }
 }
 
+func AddCorsHeaders(w http.ResponseWriter, origin string) {
+  w.Header().Set(AllowOriginHeader, origin)
+  w.Header().Set(AllowMethodsHeader, AllMethods)
+  w.Header().Set(AccessControlMaxAgeHeader, AccessControlMaxAgeHeaderValue)
+  w.Header().Set(AllowCredentialsHeader, "true")
+}
+
 func ListBasedCorsHandler(allowedOrigins []string) GlobalsReceivingHandlerFunc {
   return func (g Globals) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
@@ -38,10 +45,7 @@ func ListBasedCorsHandler(allowedOrigins []string) GlobalsReceivingHandlerFunc {
 
         for _, allowedOrigin := range allowedOrigins {
           if allowedOrigin == origin {
-            w.Header().Set(AllowOriginHeader, origin)
-            w.Header().Set(AllowMethodsHeader, AllMethods)
-            w.Header().Set(AccessControlMaxAgeHeader, AccessControlMaxAgeHeaderValue)
-            w.Header().Set(AllowCredentialsHeader, "true")
+            AddCorsHeaders(w, origin)
             break
           }
         }
