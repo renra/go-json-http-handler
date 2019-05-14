@@ -46,7 +46,7 @@ func isLocalhost(origin string) bool {
 
 type CorsAllower func([]string, string) bool
 
-func corsHandler(allowedOrigins []string, corsAllowed CorsAllower) GlobalsReceivingHandlerFunc {
+func corsHandler(allowedOrigins []string, isCorsAllowed CorsAllower) GlobalsReceivingHandlerFunc {
   return func (g Globals) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
       w.WriteHeader(http.StatusNoContent)
@@ -58,7 +58,7 @@ func corsHandler(allowedOrigins []string, corsAllowed CorsAllower) GlobalsReceiv
       if ok {
         origin := sliceWithOrigin[0]
 
-        if corsAllowed(allowedOrigins, origin) {
+        if isCorsAllowed(allowedOrigins, origin) {
           AddCorsHeaders(w, origin)
         }
       }
