@@ -56,6 +56,7 @@ func NewRouteData(verb string, pattern string, handler GlobalsReceivingHandlerFu
 
 type JsonHttpHandler struct {
   globals Globals
+  corsHandler GlobalsReceivingHandlerFunc
   routeMap []RouteData
 }
 
@@ -88,37 +89,41 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
   r = r.WithContext(context.WithValue(ctx, PayloadKey, payload))
 
-  for _, routeData := range h.routeMap {
-    if routeData.Verb == r.Method {
-      doesRouteMatch, pathParams := GetMatchAndPathParams(routeData.Pattern, r.URL.Path)
+  if r.Method == http.MethodOptions {
+    h.corsHandler(h.globals)(w, r)
+  } else {
+    for _, routeData := range h.routeMap {
+      if routeData.Verb == r.Method {
+        doesRouteMatch, pathParams := GetMatchAndPathParams(routeData.Pattern, r.URL.Path)
 
-      if doesRouteMatch {
-        ctx := r.Context()
-        r = r.WithContext(context.WithValue(ctx, PathParamsKey, *pathParams))
+        if doesRouteMatch {
+          ctx := r.Context()
+          r = r.WithContext(context.WithValue(ctx, PathParamsKey, *pathParams))
 
-        handler := routeData.Handler(h.globals)
-        middlewares := make([]Middleware, len(routeData.Middlewares))
+          handler := routeData.Handler(h.globals)
+          middlewares := make([]Middleware, len(routeData.Middlewares))
 
-        copy(middlewares, routeData.Middlewares)
+          copy(middlewares, routeData.Middlewares)
 
-        for i := len(middlewares)/2-1; i >= 0; i-- {
-          idx := len(middlewares)-1-i
-          middlewares[i], middlewares[idx] = middlewares[idx], middlewares[i]
+          for i := len(middlewares)/2-1; i >= 0; i-- {
+            idx := len(middlewares)-1-i
+            middlewares[i], middlewares[idx] = middlewares[idx], middlewares[i]
+          }
+
+          for _, mw := range middlewares {
+            handler = mw(h.globals, handler)
+          }
+
+          handler(w, r)
+
+          return
         }
-
-        for _, mw := range middlewares {
-          handler = mw(h.globals, handler)
-        }
-
-        handler(w, r)
-
-        return
       }
     }
-  }
 
-  w.WriteHeader(http.StatusNotFound)
-  fmt.Fprintf(w, "{}")
+    w.WriteHeader(http.StatusNotFound)
+    fmt.Fprintf(w, "{}")
+  }
 }
 
 func GetMatchAndPathParams(pattern string, urlPath string) (bool, *map[string]string) {
@@ -147,5 +152,9 @@ func GetMatchAndPathParams(pattern string, urlPath string) (bool, *map[string]st
 }
 
 func New(g Globals, routeMap []RouteData) *JsonHttpHandler {
-  return &JsonHttpHandler{globals: g, routeMap: routeMap}
+  return NewWithCors(g, corsNoop, routeMap)
+}
+
+func NewWithCors(g Globals, corsHandler GlobalsReceivingHandlerFunc, routeMap []RouteData) *JsonHttpHandler {
+  return &JsonHttpHandler{globals: g, corsHandler: corsHandler, routeMap: routeMap}
 }

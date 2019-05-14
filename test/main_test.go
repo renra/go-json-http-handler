@@ -145,96 +145,7 @@ func requireExactPayload(pattern string) jsonHttpHandler.Middleware {
 }
 
 func (suite *JsonHttpApiSuite) SetupTest() {
-  suite.handler = jsonHttpHandler.New(
-    &Globals{},
-    []jsonHttpHandler.RouteData{
-      jsonHttpHandler.NewRouteData(
-        http.MethodGet,
-        "/resources",
-        func(g jsonHttpHandler.Globals) http.HandlerFunc {
-          return func(w http.ResponseWriter, r *http.Request) {
-            w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, getIndexBody)
-          }
-        },
-        []jsonHttpHandler.Middleware{},
-      ),
-      jsonHttpHandler.NewRouteData(
-        http.MethodPost,
-        "/resources",
-        func(g jsonHttpHandler.Globals) http.HandlerFunc {
-          return func(w http.ResponseWriter, r *http.Request) {
-            w.WriteHeader(http.StatusCreated)
-            fmt.Fprintf(w, postCreateBody)
-          }
-        },
-        []jsonHttpHandler.Middleware{},
-      ),
-      jsonHttpHandler.NewRouteData(
-        http.MethodGet,
-        "/resources/:id",
-        func(g jsonHttpHandler.Globals) http.HandlerFunc {
-          return func(w http.ResponseWriter, r *http.Request) {
-            id := jsonHttpHandler.GetPathParamP(r.Context(), "id")
-
-            w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, fmt.Sprintf("%s %s", getDetailBody, id))
-          }
-        },
-        []jsonHttpHandler.Middleware{},
-      ),
-      jsonHttpHandler.NewRouteData(
-        http.MethodPatch,
-        "/resources/:id",
-        func(g jsonHttpHandler.Globals) http.HandlerFunc {
-          return func(w http.ResponseWriter, r *http.Request) {
-            id := jsonHttpHandler.GetPathParamP(r.Context(), "id")
-
-            w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, fmt.Sprintf("%s %s", patchUpdateBody, id))
-          }
-        },
-        []jsonHttpHandler.Middleware{},
-      ),
-      jsonHttpHandler.NewRouteData(
-        http.MethodDelete,
-        "/resources/:id",
-        func(g jsonHttpHandler.Globals) http.HandlerFunc {
-          return func(w http.ResponseWriter, r *http.Request) {
-            id := jsonHttpHandler.GetPathParamP(r.Context(), "id")
-
-            w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, fmt.Sprintf("%s %s", deleteDestroyBody, id))
-          }
-        },
-        []jsonHttpHandler.Middleware{},
-      ),
-      jsonHttpHandler.NewRouteData(
-        http.MethodGet,
-        "/error",
-        func(g jsonHttpHandler.Globals) http.HandlerFunc {
-          return func(w http.ResponseWriter, r *http.Request) {
-            panic("The impossible has happened")
-          }
-        },
-        []jsonHttpHandler.Middleware{},
-      ),
-      jsonHttpHandler.NewRouteData(
-        http.MethodPost,
-        "/middlewares",
-        func(g jsonHttpHandler.Globals) http.HandlerFunc {
-          return func(w http.ResponseWriter, r *http.Request) {
-            w.WriteHeader(http.StatusOK)
-            fmt.Fprintf(w, middlewaresBody)
-          }
-        },
-        []jsonHttpHandler.Middleware{
-          requirePayload,
-          requireExactPayload(wantedPayload),
-        },
-      ),
-    },
-  )
+  suite.handler = getBasicJsonHttpHandler()
 }
 
 func (suite *JsonHttpApiSuite) TestIndexRoute() {
@@ -397,5 +308,46 @@ func (suite *JsonHttpApiSuite) TestMiddlewares_NoPayload() {
   )
 
   assert.Equal(suite.T(), http.StatusUnauthorized, recorder.Code)
+  assert.Equal(suite.T(), "", recorder.Body.String())
+}
+
+func (suite *JsonHttpApiSuite) TestCORS_WithoutAnyHandler() {
+  request, _ := http.NewRequest(http.MethodOptions, "/resources", nil)
+  recorder := httptest.NewRecorder()
+
+  suite.handler.ServeHTTP(recorder, request)
+
+  assert.Equal(
+    suite.T(),
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
+  )
+
+  assert.Equal(suite.T(), http.StatusNotFound, recorder.Code)
+  assert.Equal(suite.T(), emptyBody, recorder.Body.String())
+}
+
+func (suite *JsonHttpApiSuite) TestCors_WithCustomHandler() {
+  suite.handler = getJsonHttpHandlerWithCors(
+    func (g jsonHttpHandler.Globals) http.HandlerFunc {
+      return func (w http.ResponseWriter, r *http.Request) {
+        w.WriteHeader(http.StatusOK)
+        fmt.Fprintf(w, "")
+      }
+    },
+  )
+
+  request, _ := http.NewRequest(http.MethodOptions, "/resources", nil)
+  recorder := httptest.NewRecorder()
+
+  suite.handler.ServeHTTP(recorder, request)
+
+  assert.Equal(
+    suite.T(),
+    []string([]string{jsonContentType}),
+    recorder.Header()[jsonContentTypeHeader],
+  )
+
+  assert.Equal(suite.T(), http.StatusOK, recorder.Code)
   assert.Equal(suite.T(), "", recorder.Body.String())
 }
