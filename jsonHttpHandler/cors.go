@@ -38,72 +38,58 @@ func isLocalhost(origin string) bool {
   maybeUrl, err := url.Parse(origin)
 
   if err != nil {
-    fmt.Println(origin)
-    fmt.Println(fmt.Sprintf("%v", err))
     return false
   }
 
   return maybeUrl.Hostname() == "localhost"
 }
 
-func ListBasedCorsHandler(allowedOrigins []string) GlobalsReceivingHandlerFunc {
+type CorsAllower func([]string, string) bool
+
+func corsHandler(allowedOrigins []string, corsAllowed CorsAllower) GlobalsReceivingHandlerFunc {
   return func (g Globals) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
+      w.WriteHeader(http.StatusNoContent)
       w.Header().Set(VaryHeader, VaryHeaderValue)
+      fmt.Fprintf(w, "")
 
       sliceWithOrigin, ok := r.Header[OriginHeader]
 
       if ok {
         origin := sliceWithOrigin[0]
 
-        if isLocalhost(origin) {
+        if corsAllowed(allowedOrigins, origin) {
           AddCorsHeaders(w, origin)
-        } else {
-          for _, allowedOrigin := range allowedOrigins {
-            if allowedOrigin == origin {
-              AddCorsHeaders(w, origin)
-              break
-            }
-          }
         }
-
-        w.WriteHeader(http.StatusNoContent)
-        fmt.Fprintf(w, "")
-      } else {
-        w.WriteHeader(http.StatusNoContent)
-        fmt.Fprintf(w, "")
       }
     }
   }
 }
 
-func ListBasedCorsHandlerWithLocalhost(allowedOrigins []string) GlobalsReceivingHandlerFunc {
-  return func (g Globals) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-      w.Header().Set(VaryHeader, VaryHeaderValue)
-
-      sliceWithOrigin, ok := r.Header[OriginHeader]
-
-      if ok {
-        origin := sliceWithOrigin[0]
-
-        if isLocalhost(origin) {
-          AddCorsHeaders(w, origin)
-        } else {
-          for _, allowedOrigin := range allowedOrigins {
-            if allowedOrigin == origin {
-              AddCorsHeaders(w, origin)
-              break
-            }
-          }
-        }
-
-        w.WriteHeader(http.StatusNoContent)
-        fmt.Fprintf(w, "")
-      } else {
-        w.WriteHeader(http.StatusNoContent)
-        fmt.Fprintf(w, "")
+func ListBasedCorsHandler(allowedOrigins []string) GlobalsReceivingHandlerFunc {
+  return corsHandler(allowedOrigins, func(origins []string, origin string) bool {
+    for _, allowedOrigin := range origins {
+      if allowedOrigin == origin {
+        return true
       }
     }
-  }
+
+    return false
+  })
+}
+
+func ListBasedCorsHandlerWithLocalhost(allowedOrigins []string) GlobalsReceivingHandlerFunc {
+  return corsHandler(allowedOrigins, func(origins []string, origin string) bool {
+    if isLocalhost(origin) {
+      return true
+    } else {
+      for _, allowedOrigin := range origins {
+        if allowedOrigin == origin {
+          return true
+        }
+      }
+
+      return false
+    }
+  })
 }
