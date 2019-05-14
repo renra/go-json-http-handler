@@ -2,6 +2,7 @@ package jsonHttpHandler
 
 import (
   "fmt"
+  "net/url"
   "net/http"
 )
 
@@ -33,6 +34,18 @@ func AddCorsHeaders(w http.ResponseWriter, origin string) {
   w.Header().Set(AllowCredentialsHeader, "true")
 }
 
+func isLocalhost(origin string) bool {
+  maybeUrl, err := url.Parse(origin)
+
+  if err != nil {
+    fmt.Println(origin)
+    fmt.Println(fmt.Sprintf("%v", err))
+    return false
+  }
+
+  return maybeUrl.Hostname() == "localhost"
+}
+
 func ListBasedCorsHandler(allowedOrigins []string) GlobalsReceivingHandlerFunc {
   return func (g Globals) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
@@ -43,10 +56,14 @@ func ListBasedCorsHandler(allowedOrigins []string) GlobalsReceivingHandlerFunc {
       if ok {
         origin := sliceWithOrigin[0]
 
-        for _, allowedOrigin := range allowedOrigins {
-          if allowedOrigin == origin {
-            AddCorsHeaders(w, origin)
-            break
+        if isLocalhost(origin) {
+          AddCorsHeaders(w, origin)
+        } else {
+          for _, allowedOrigin := range allowedOrigins {
+            if allowedOrigin == origin {
+              AddCorsHeaders(w, origin)
+              break
+            }
           }
         }
 
@@ -60,8 +77,33 @@ func ListBasedCorsHandler(allowedOrigins []string) GlobalsReceivingHandlerFunc {
   }
 }
 
+func ListBasedCorsHandlerWithLocalhost(allowedOrigins []string) GlobalsReceivingHandlerFunc {
+  return func (g Globals) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+      w.Header().Set(VaryHeader, VaryHeaderValue)
 
-    //w.Header().Set(AllowOriginHeader, "*")
-    //w.Header().Set(AllowMethodsHeader, "POST, GET, OPTIONS, PUT, DELETE")
-    //w.Header().Set(AllowHeadersHeader, "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-    //w.Header().Set(AllowCredentialsHeader, true)
+      sliceWithOrigin, ok := r.Header[OriginHeader]
+
+      if ok {
+        origin := sliceWithOrigin[0]
+
+        if isLocalhost(origin) {
+          AddCorsHeaders(w, origin)
+        } else {
+          for _, allowedOrigin := range allowedOrigins {
+            if allowedOrigin == origin {
+              AddCorsHeaders(w, origin)
+              break
+            }
+          }
+        }
+
+        w.WriteHeader(http.StatusNoContent)
+        fmt.Fprintf(w, "")
+      } else {
+        w.WriteHeader(http.StatusNoContent)
+        fmt.Fprintf(w, "")
+      }
+    }
+  }
+}
