@@ -319,12 +319,12 @@ func (suite *JsonHttpApiSuite) TestCORS_WithoutAnyHandler() {
 
   assert.Equal(
     suite.T(),
-    []string([]string{jsonContentType}),
-    recorder.Header()[jsonContentTypeHeader],
+    0,
+    len(recorder.Header()[jsonContentTypeHeader]),
   )
 
   assert.Equal(suite.T(), http.StatusNotFound, recorder.Code)
-  assert.Equal(suite.T(), emptyBody, recorder.Body.String())
+  assert.Equal(suite.T(), "", recorder.Body.String())
 }
 
 func (suite *JsonHttpApiSuite) TestCors_WithCustomHandler() {
@@ -344,10 +344,159 @@ func (suite *JsonHttpApiSuite) TestCors_WithCustomHandler() {
 
   assert.Equal(
     suite.T(),
-    []string([]string{jsonContentType}),
-    recorder.Header()[jsonContentTypeHeader],
+    0,
+    len(recorder.Header()[jsonContentTypeHeader]),
   )
 
   assert.Equal(suite.T(), http.StatusOK, recorder.Code)
+  assert.Equal(suite.T(), "", recorder.Body.String())
+}
+
+func (suite *JsonHttpApiSuite) TestCors_WithProvidedHandler() {
+  origin1 := "https://server.foo.bar"
+  origin2 := "https://server.whatever"
+
+  allowedOrigins := []string{origin1, origin2}
+
+  suite.handler = getJsonHttpHandlerWithCors(
+    jsonHttpHandler.ListBasedCorsHandler(allowedOrigins),
+  )
+
+  request, _ := http.NewRequest(http.MethodOptions, "/resources", nil)
+  request.Header.Add(jsonHttpHandler.OriginHeader, origin1)
+
+  recorder := httptest.NewRecorder()
+
+  suite.handler.ServeHTTP(recorder, request)
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonContentTypeHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    []string{origin1},
+    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
+  )
+
+  assert.Equal(
+    suite.T(),
+    []string{jsonHttpHandler.AllMethods},
+    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
+  )
+
+  assert.Equal(
+    suite.T(),
+    []string{"true"},
+    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
+  )
+
+  assert.Equal(
+    suite.T(),
+    []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
+    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
+  )
+
+  assert.Equal(
+    suite.T(),
+    []string{jsonHttpHandler.VaryHeaderValue},
+    recorder.Header()[jsonHttpHandler.VaryHeader],
+  )
+
+  assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+  assert.Equal(suite.T(), "", recorder.Body.String())
+
+  request, _ = http.NewRequest(http.MethodOptions, "/resources", nil)
+  request.Header.Add(jsonHttpHandler.OriginHeader, origin2)
+
+  recorder = httptest.NewRecorder()
+
+  suite.handler.ServeHTTP(recorder, request)
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonContentTypeHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    []string{origin2},
+    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
+  )
+
+  assert.Equal(
+    suite.T(),
+    []string{jsonHttpHandler.AllMethods},
+    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
+  )
+
+  assert.Equal(
+    suite.T(),
+    []string{"true"},
+    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
+  )
+
+  assert.Equal(
+    suite.T(),
+    []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
+    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
+  )
+
+  assert.Equal(
+    suite.T(),
+    []string{jsonHttpHandler.VaryHeaderValue},
+    recorder.Header()[jsonHttpHandler.VaryHeader],
+  )
+
+  assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+  assert.Equal(suite.T(), "", recorder.Body.String())
+
+  request, _ = http.NewRequest(http.MethodOptions, "/resources", nil)
+  request.Header.Add(jsonHttpHandler.OriginHeader, "https://some-totally-different.domain.net")
+
+  recorder = httptest.NewRecorder()
+
+  suite.handler.ServeHTTP(recorder, request)
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonContentTypeHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AllowOriginHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AllowMethodsHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AllowCredentialsHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    []string{jsonHttpHandler.VaryHeaderValue},
+    recorder.Header()[jsonHttpHandler.VaryHeader],
+  )
+
+  assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
   assert.Equal(suite.T(), "", recorder.Body.String())
 }

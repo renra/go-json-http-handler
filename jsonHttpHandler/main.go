@@ -61,7 +61,6 @@ type JsonHttpHandler struct {
 }
 
 func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-  w.Header().Set("Content-Type", "application/json; charset=utf-8")
   h.globals.Log(fmt.Sprintf("%s", r.URL))
 
   defer func() {
@@ -72,6 +71,13 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
       fmt.Fprintf(w, "{}")
     }
   }()
+
+  if r.Method == http.MethodOptions {
+    h.corsHandler(h.globals)(w, r)
+    return
+  }
+
+  w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
   ctx := r.Context()
   var payload *string = nil
@@ -89,41 +95,37 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
   r = r.WithContext(context.WithValue(ctx, PayloadKey, payload))
 
-  if r.Method == http.MethodOptions {
-    h.corsHandler(h.globals)(w, r)
-  } else {
-    for _, routeData := range h.routeMap {
-      if routeData.Verb == r.Method {
-        doesRouteMatch, pathParams := GetMatchAndPathParams(routeData.Pattern, r.URL.Path)
+  for _, routeData := range h.routeMap {
+    if routeData.Verb == r.Method {
+      doesRouteMatch, pathParams := GetMatchAndPathParams(routeData.Pattern, r.URL.Path)
 
-        if doesRouteMatch {
-          ctx := r.Context()
-          r = r.WithContext(context.WithValue(ctx, PathParamsKey, *pathParams))
+      if doesRouteMatch {
+        ctx := r.Context()
+        r = r.WithContext(context.WithValue(ctx, PathParamsKey, *pathParams))
 
-          handler := routeData.Handler(h.globals)
-          middlewares := make([]Middleware, len(routeData.Middlewares))
+        handler := routeData.Handler(h.globals)
+        middlewares := make([]Middleware, len(routeData.Middlewares))
 
-          copy(middlewares, routeData.Middlewares)
+        copy(middlewares, routeData.Middlewares)
 
-          for i := len(middlewares)/2-1; i >= 0; i-- {
-            idx := len(middlewares)-1-i
-            middlewares[i], middlewares[idx] = middlewares[idx], middlewares[i]
-          }
-
-          for _, mw := range middlewares {
-            handler = mw(h.globals, handler)
-          }
-
-          handler(w, r)
-
-          return
+        for i := len(middlewares)/2-1; i >= 0; i-- {
+          idx := len(middlewares)-1-i
+          middlewares[i], middlewares[idx] = middlewares[idx], middlewares[i]
         }
+
+        for _, mw := range middlewares {
+          handler = mw(h.globals, handler)
+        }
+
+        handler(w, r)
+
+        return
       }
     }
-
-    w.WriteHeader(http.StatusNotFound)
-    fmt.Fprintf(w, "{}")
   }
+
+  w.WriteHeader(http.StatusNotFound)
+  fmt.Fprintf(w, "{}")
 }
 
 func GetMatchAndPathParams(pattern string, urlPath string) (bool, *map[string]string) {
