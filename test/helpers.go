@@ -95,18 +95,3 @@ func getRouteData() []jsonHttpHandler.RouteData {
     ),
   }
 }
-
-func getBasicJsonHttpHandler() *jsonHttpHandler.JsonHttpHandler {
-  return jsonHttpHandler.New(
-    &Globals{},
-    getRouteData(),
-  )
-}
-
-func getJsonHttpHandlerWithCors(corsHandler jsonHttpHandler.GlobalsReceivingHandlerFunc) *jsonHttpHandler.JsonHttpHandler {
-  return jsonHttpHandler.NewWithCors(
-    &Globals{},
-    corsHandler,
-    getRouteData(),
-  )
-}

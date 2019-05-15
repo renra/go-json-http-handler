@@ -145,7 +145,10 @@ func requireExactPayload(pattern string) jsonHttpHandler.Middleware {
 }
 
 func (suite *JsonHttpApiSuite) SetupTest() {
-  suite.handler = getBasicJsonHttpHandler()
+  suite.handler = jsonHttpHandler.New(
+    &Globals{},
+    getRouteData(),
+  )
 }
 
 func (suite *JsonHttpApiSuite) TestIndexRoute() {
