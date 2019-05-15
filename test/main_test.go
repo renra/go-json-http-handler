@@ -323,18 +323,50 @@ func (suite *JsonHttpApiSuite) TestCORS_WithoutAnyHandler() {
     len(recorder.Header()[jsonContentTypeHeader]),
   )
 
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AllowOriginHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AllowMethodsHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AllowCredentialsHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.VaryHeader]),
+  )
+
   assert.Equal(suite.T(), http.StatusNotFound, recorder.Code)
   assert.Equal(suite.T(), "", recorder.Body.String())
 }
 
 func (suite *JsonHttpApiSuite) TestCors_WithCustomHandler() {
-  suite.handler = getJsonHttpHandlerWithCors(
+  suite.handler = jsonHttpHandler.NewWithCors(
+    &Globals{},
     func (g jsonHttpHandler.Globals) http.HandlerFunc {
       return func (w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusOK)
         fmt.Fprintf(w, "")
       }
     },
+    getRouteData(),
   )
 
   request, _ := http.NewRequest(http.MethodOptions, "/resources", nil)
@@ -348,6 +380,36 @@ func (suite *JsonHttpApiSuite) TestCors_WithCustomHandler() {
     len(recorder.Header()[jsonContentTypeHeader]),
   )
 
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AllowOriginHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AllowMethodsHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AllowCredentialsHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader]),
+  )
+
+  assert.Equal(
+    suite.T(),
+    0,
+    len(recorder.Header()[jsonHttpHandler.VaryHeader]),
+  )
+
   assert.Equal(suite.T(), http.StatusOK, recorder.Code)
   assert.Equal(suite.T(), "", recorder.Body.String())
 }
@@ -358,8 +420,10 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandler() {
 
   allowedOrigins := []string{origin1, origin2}
 
-  suite.handler = getJsonHttpHandlerWithCors(
+  suite.handler = jsonHttpHandler.NewWithCors(
+    &Globals{},
     jsonHttpHandler.ListBasedCorsHandler(allowedOrigins),
+    getRouteData(),
   )
 
   request, _ := http.NewRequest(http.MethodOptions, "/resources", nil)
@@ -554,8 +618,10 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandlerWithLocalhost() {
 
   allowedOrigins := []string{origin1, origin2}
 
-  suite.handler = getJsonHttpHandlerWithCors(
+  suite.handler = jsonHttpHandler.NewWithCors(
+    &Globals{},
     jsonHttpHandler.ListBasedCorsHandlerWithLocalhost(allowedOrigins),
+    getRouteData(),
   )
 
   request, _ := http.NewRequest(http.MethodOptions, "/resources", nil)
