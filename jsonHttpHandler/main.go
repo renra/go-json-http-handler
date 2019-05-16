@@ -56,11 +56,11 @@ func NewRouteData(verb string, pattern string, handler GlobalsReceivingHandlerFu
 
 type JsonHttpHandler struct {
   globals Globals
+  corsHandler GlobalsReceivingHandlerFunc
   routeMap []RouteData
 }
 
 func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-  w.Header().Set("Content-Type", "application/json; charset=utf-8")
   h.globals.Log(fmt.Sprintf("%s", r.URL))
 
   defer func() {
@@ -71,6 +71,13 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
       fmt.Fprintf(w, "{}")
     }
   }()
+
+  if r.Method == http.MethodOptions {
+    h.corsHandler(h.globals)(w, r)
+    return
+  }
+
+  w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
   ctx := r.Context()
   var payload *string = nil
@@ -147,5 +154,9 @@ func GetMatchAndPathParams(pattern string, urlPath string) (bool, *map[string]st
 }
 
 func New(g Globals, routeMap []RouteData) *JsonHttpHandler {
-  return &JsonHttpHandler{globals: g, routeMap: routeMap}
+  return NewWithCors(g, corsNoop, routeMap)
+}
+
+func NewWithCors(g Globals, corsHandler GlobalsReceivingHandlerFunc, routeMap []RouteData) *JsonHttpHandler {
+  return &JsonHttpHandler{globals: g, corsHandler: corsHandler, routeMap: routeMap}
 }
