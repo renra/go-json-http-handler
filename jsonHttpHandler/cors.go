@@ -49,9 +49,7 @@ type CorsAllower func([]string, string) bool
 func CorsHandler(allowedOrigins []string, isCorsAllowed CorsAllower) GlobalsReceivingHandlerFunc {
   return func (g Globals) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-      w.WriteHeader(http.StatusNoContent)
       w.Header().Set(VaryHeader, VaryHeaderValue)
-      fmt.Fprintf(w, "")
 
       sliceWithOrigin, ok := r.Header[OriginHeader]
 
@@ -62,6 +60,9 @@ func CorsHandler(allowedOrigins []string, isCorsAllowed CorsAllower) GlobalsRece
           AddCorsHeaders(w, origin)
         }
       }
+
+      w.WriteHeader(http.StatusNoContent)
+      fmt.Fprintf(w, "")
     }
   }
 }
