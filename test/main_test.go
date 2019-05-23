@@ -320,37 +320,10 @@ func (suite *JsonHttpApiSuite) TestCORS_WithoutAnyHandler() {
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+  expectedHeaders := http.Header{}
 
   assert.Equal(suite.T(), http.StatusNotFound, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 }
 
@@ -371,37 +344,10 @@ func (suite *JsonHttpApiSuite) TestCors_WithCustomHandler() {
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+  expectedHeaders := http.Header{}
 
   assert.Equal(suite.T(), http.StatusOK, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 }
 
@@ -424,42 +370,16 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandler() {
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{origin1},
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AllMethods},
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{"true"},
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.VaryHeaderValue},
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+  expectedHeaders := http.Header{
+		jsonHttpHandler.AllowOriginHeader:        []string{origin1},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
+		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
+		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
+  }
 
   assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 
   request, _ = http.NewRequest(http.MethodOptions, "/resources", nil)
@@ -469,42 +389,16 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandler() {
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{origin2},
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AllMethods},
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{"true"},
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.VaryHeaderValue},
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+  expectedHeaders = http.Header{
+		jsonHttpHandler.AllowOriginHeader:        []string{origin2},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
+		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
+		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
+  }
 
   assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 
   localhostOrigin := "http://localhost"
@@ -515,38 +409,12 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandler() {
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.VaryHeaderValue},
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+	expectedHeaders = http.Header{
+		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
+	}
 
   assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 
   request, _ = http.NewRequest(http.MethodOptions, "/resources", nil)
@@ -556,38 +424,12 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandler() {
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.VaryHeaderValue},
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+	expectedHeaders = http.Header{
+		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
+	}
 
   assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 }
 
@@ -610,42 +452,16 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandlerWithLocalhost() {
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{origin1},
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AllMethods},
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{"true"},
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.VaryHeaderValue},
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+  expectedHeaders := http.Header{
+		jsonHttpHandler.AllowOriginHeader:        []string{origin1},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
+		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
+		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
+  }
 
   assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 
   request, _ = http.NewRequest(http.MethodOptions, "/resources", nil)
@@ -655,42 +471,16 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandlerWithLocalhost() {
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{origin2},
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AllMethods},
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{"true"},
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.VaryHeaderValue},
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+  expectedHeaders = http.Header{
+		jsonHttpHandler.AllowOriginHeader:        []string{origin2},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
+		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
+		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
+  }
 
   assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 
   localhostOrigin := "http://localhost:3000"
@@ -701,180 +491,76 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandlerWithLocalhost() {
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{localhostOrigin},
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AllMethods},
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{"true"},
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.VaryHeaderValue},
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+  expectedHeaders = http.Header{
+		jsonHttpHandler.AllowOriginHeader:        []string{localhostOrigin},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
+		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
+		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
+  }
 
   assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 
   localhostOrigin = "http://localhost"
   request, _ = http.NewRequest(http.MethodOptions, "/resources", nil)
-  request.Header.Add(jsonHttpHandler.OriginHeader, "http://localhost")
+  request.Header.Add(jsonHttpHandler.OriginHeader, localhostOrigin)
 
   recorder = httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
+  expectedHeaders = http.Header{
+		jsonHttpHandler.AllowOriginHeader:        []string{localhostOrigin},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
+		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
+		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
+  }
 
-  assert.Equal(
-    suite.T(),
-    []string{localhostOrigin},
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AllMethods},
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{"true"},
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.VaryHeaderValue},
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
-
-  localhostOrigin = "https://localhost"
   assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 
+  localhostOrigin = "https://localhost"
   request, _ = http.NewRequest(http.MethodOptions, "/resources", nil)
-  request.Header.Add(jsonHttpHandler.OriginHeader, "https://localhost")
+  request.Header.Add(jsonHttpHandler.OriginHeader, localhostOrigin)
 
   recorder = httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{localhostOrigin},
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AllMethods},
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{"true"},
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.VaryHeaderValue},
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+  expectedHeaders = http.Header{
+		jsonHttpHandler.AllowOriginHeader:        []string{localhostOrigin},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
+		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
+		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
+  }
 
   assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 
   localhostOrigin = "https://localhost:9292"
   request, _ = http.NewRequest(http.MethodOptions, "/resources", nil)
-  request.Header.Add(jsonHttpHandler.OriginHeader, "https://localhost:9292")
+  request.Header.Add(jsonHttpHandler.OriginHeader, localhostOrigin)
 
   recorder = httptest.NewRecorder()
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{localhostOrigin},
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AllMethods},
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{"true"},
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.VaryHeaderValue},
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+  expectedHeaders = http.Header{
+		jsonHttpHandler.AllowOriginHeader:        []string{localhostOrigin},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
+		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
+		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
+  }
 
   assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 
   request, _ = http.NewRequest(http.MethodOptions, "/resources", nil)
@@ -884,37 +570,11 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandlerWithLocalhost() {
 
   suite.handler.ServeHTTP(recorder, request)
 
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonContentTypeHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowOriginHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowMethodsHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AllowCredentialsHeader],
-  )
-
-  assert.Empty(
-    suite.T(),
-    recorder.Header()[jsonHttpHandler.AccessControlMaxAgeHeader],
-  )
-
-  assert.Equal(
-    suite.T(),
-    []string{jsonHttpHandler.VaryHeaderValue},
-    recorder.Header()[jsonHttpHandler.VaryHeader],
-  )
+  expectedHeaders = http.Header{
+		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
+  }
 
   assert.Equal(suite.T(), http.StatusNoContent, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
   assert.Equal(suite.T(), "", recorder.Body.String())
 }
