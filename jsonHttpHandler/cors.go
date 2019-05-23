@@ -15,7 +15,8 @@ const (
   AccessControlMaxAgeHeader = "Access-Control-Max-Age"
   VaryHeader = "Vary"
 
-  AllMethods = "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD"
+  AllMethods = "*"
+  AllowedHeaders = "*"
   AccessControlMaxAgeHeaderValue = "1728000"
   VaryHeaderValue = "Origin"
 )
@@ -30,6 +31,7 @@ func corsNoop(g Globals) http.HandlerFunc {
 func AddCorsHeaders(w http.ResponseWriter, origin string) {
   w.Header().Set(AllowOriginHeader, origin)
   w.Header().Set(AllowMethodsHeader, AllMethods)
+  w.Header().Set(AllowHeadersHeader, AllowedHeaders)
   w.Header().Set(AccessControlMaxAgeHeader, AccessControlMaxAgeHeaderValue)
   w.Header().Set(AllowCredentialsHeader, "true")
 }
