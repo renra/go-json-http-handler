@@ -1,38 +1,38 @@
 package jsonHttpHandler
 
 import (
-  "fmt"
-  "context"
-  "github.com/renra/go-errtrace/errtrace"
+	"context"
+	"fmt"
+	"github.com/renra/go-errtrace/errtrace"
 )
 
 const (
-  PathParamsKey = "path_params"
-  PayloadKey = "payload"
+	PathParamsKey = "path_params"
+	PayloadKey    = "payload"
 )
 
 func GetPathParam(ctx context.Context, key string) (*string, *errtrace.Error) {
-  urlParams, ok := ctx.Value(PathParamsKey).(map[string]string)
+	urlParams, ok := ctx.Value(PathParamsKey).(map[string]string)
 
-  if !ok {
-    return nil, errtrace.New(fmt.Sprintf("Could not find url params", key))
-  }
+	if !ok {
+		return nil, errtrace.New(fmt.Sprintf("Could not find url params", key))
+	}
 
-  value, ok := urlParams[key]
+	value, ok := urlParams[key]
 
-  if !ok {
-    return nil, errtrace.New(fmt.Sprintf("Could not find key %s in url params", key))
-  }
+	if !ok {
+		return nil, errtrace.New(fmt.Sprintf("Could not find key %s in url params", key))
+	}
 
-  return &value, nil
+	return &value, nil
 }
 
 func GetPathParamP(ctx context.Context, key string) string {
-  value, err := GetPathParam(ctx, key)
+	value, err := GetPathParam(ctx, key)
 
-  if err != nil {
-    panic(err)
-  }
+	if err != nil {
+		panic(err)
+	}
 
-  return *value
+	return *value
 }
