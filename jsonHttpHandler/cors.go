@@ -17,7 +17,7 @@ const (
 
   AllMethods = "*"
   AllowedHeaders = "*"
-  AccessControlMaxAgeHeaderValue = "1728000"
+  AccessControlMaxAgeHeaderValue = "86400"
   VaryHeaderValue = "Origin"
 )
 
