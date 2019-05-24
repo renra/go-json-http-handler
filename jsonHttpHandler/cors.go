@@ -15,7 +15,8 @@ const (
   AccessControlMaxAgeHeader = "Access-Control-Max-Age"
   VaryHeader = "Vary"
 
-  AllMethods = "*"
+  AnyOrigin = "*"
+  AnyMethod = "*"
   AllowedHeaders = "*"
   AccessControlMaxAgeHeaderValue = "86400"
   VaryHeaderValue = "Origin"
@@ -30,10 +31,14 @@ func corsNoop(g Globals) http.HandlerFunc {
 
 func AddCorsHeaders(w http.ResponseWriter, origin string) {
   w.Header().Set(AllowOriginHeader, origin)
-  w.Header().Set(AllowMethodsHeader, AllMethods)
+  w.Header().Set(AllowMethodsHeader, AnyMethod)
   w.Header().Set(AllowHeadersHeader, AllowedHeaders)
   w.Header().Set(AccessControlMaxAgeHeader, AccessControlMaxAgeHeaderValue)
   w.Header().Set(AllowCredentialsHeader, "true")
+}
+
+func AddCorsHeadersForAnyOrigin(w http.ResponseWriter) {
+  w.Header().Set(AllowOriginHeader, AnyOrigin)
 }
 
 func isLocalhost(origin string) bool {
