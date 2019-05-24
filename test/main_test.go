@@ -242,7 +242,7 @@ func (suite *JsonHttpApiSuite) TestNotFound() {
 
 	expectedHeaders := http.Header{
 		jsonContentTypeHeader:             []string{jsonContentType},
-		jsonHttpHandler.AllowOriginHeader: []string{jsonHttpHandler.AnyOrigin},
+		jsonHttpHandler.AllowOriginHeader: []string{jsonHttpHandler.Any},
 	}
 
 	assert.Equal(suite.T(), http.StatusNotFound, recorder.Code)
@@ -258,7 +258,7 @@ func (suite *JsonHttpApiSuite) TestInternalServerError() {
 
 	expectedHeaders := http.Header{
 		jsonContentTypeHeader:             []string{jsonContentType},
-		jsonHttpHandler.AllowOriginHeader: []string{jsonHttpHandler.AnyOrigin},
+		jsonHttpHandler.AllowOriginHeader: []string{jsonHttpHandler.Any},
 	}
 
 	assert.Equal(suite.T(), http.StatusInternalServerError, recorder.Code)
