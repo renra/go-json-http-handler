@@ -16,8 +16,8 @@ const (
 	VaryHeader                = "Vary"
 
 	Any                            = "*"
-	AllowedMethods                 = Any
-	AllowedHeaders                 = Any
+	AllowedMethods                 = "GET,HEAD,POST,PATCH,PUT,DELETE"
+	AllowedHeaders                 = "Content-Type,Authorization"
 	AccessControlMaxAgeHeaderValue = "86400"
 	VaryHeaderValue                = "Origin"
 )
