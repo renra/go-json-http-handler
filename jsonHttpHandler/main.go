@@ -67,6 +67,7 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if r := recover(); r != nil {
 			h.globals.LogErrorWithTrace(errtrace.Wrap(r))
 
+			AddCorsHeadersForAnyOrigin(w)
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "{}")
 		}
@@ -124,6 +125,7 @@ func (h JsonHttpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	AddCorsHeadersForAnyOrigin(w)
 	w.WriteHeader(http.StatusNotFound)
 	fmt.Fprintf(w, "{}")
 }

@@ -240,13 +240,13 @@ func (suite *JsonHttpApiSuite) TestNotFound() {
 
 	suite.handler.ServeHTTP(recorder, request)
 
-	assert.Equal(
-		suite.T(),
-		[]string([]string{jsonContentType}),
-		recorder.Header()[jsonContentTypeHeader],
-	)
+	expectedHeaders := http.Header{
+		jsonContentTypeHeader:             []string{jsonContentType},
+		jsonHttpHandler.AllowOriginHeader: []string{jsonHttpHandler.Any},
+	}
 
 	assert.Equal(suite.T(), http.StatusNotFound, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
 	assert.Equal(suite.T(), emptyBody, recorder.Body.String())
 }
 
@@ -256,13 +256,13 @@ func (suite *JsonHttpApiSuite) TestInternalServerError() {
 
 	suite.handler.ServeHTTP(recorder, request)
 
-	assert.Equal(
-		suite.T(),
-		[]string([]string{jsonContentType}),
-		recorder.Header()[jsonContentTypeHeader],
-	)
+	expectedHeaders := http.Header{
+		jsonContentTypeHeader:             []string{jsonContentType},
+		jsonHttpHandler.AllowOriginHeader: []string{jsonHttpHandler.Any},
+	}
 
 	assert.Equal(suite.T(), http.StatusInternalServerError, recorder.Code)
+	assert.Equal(suite.T(), expectedHeaders, recorder.Header())
 	assert.Equal(suite.T(), emptyBody, recorder.Body.String())
 }
 
@@ -372,7 +372,8 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandler() {
 
 	expectedHeaders := http.Header{
 		jsonHttpHandler.AllowOriginHeader:         []string{origin1},
-		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllowedMethods},
+		jsonHttpHandler.AllowHeadersHeader:        []string{jsonHttpHandler.AllowedHeaders},
 		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
 		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
 		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
@@ -391,7 +392,8 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandler() {
 
 	expectedHeaders = http.Header{
 		jsonHttpHandler.AllowOriginHeader:         []string{origin2},
-		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllowedMethods},
+		jsonHttpHandler.AllowHeadersHeader:        []string{jsonHttpHandler.AllowedHeaders},
 		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
 		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
 		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
@@ -454,7 +456,8 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandlerWithLocalhost() {
 
 	expectedHeaders := http.Header{
 		jsonHttpHandler.AllowOriginHeader:         []string{origin1},
-		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllowedMethods},
+		jsonHttpHandler.AllowHeadersHeader:        []string{jsonHttpHandler.AllowedHeaders},
 		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
 		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
 		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
@@ -473,7 +476,8 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandlerWithLocalhost() {
 
 	expectedHeaders = http.Header{
 		jsonHttpHandler.AllowOriginHeader:         []string{origin2},
-		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllowedMethods},
+		jsonHttpHandler.AllowHeadersHeader:        []string{jsonHttpHandler.AllowedHeaders},
 		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
 		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
 		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
@@ -493,7 +497,8 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandlerWithLocalhost() {
 
 	expectedHeaders = http.Header{
 		jsonHttpHandler.AllowOriginHeader:         []string{localhostOrigin},
-		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllowedMethods},
+		jsonHttpHandler.AllowHeadersHeader:        []string{jsonHttpHandler.AllowedHeaders},
 		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
 		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
 		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
@@ -513,7 +518,8 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandlerWithLocalhost() {
 
 	expectedHeaders = http.Header{
 		jsonHttpHandler.AllowOriginHeader:         []string{localhostOrigin},
-		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllowedMethods},
+		jsonHttpHandler.AllowHeadersHeader:        []string{jsonHttpHandler.AllowedHeaders},
 		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
 		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
 		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
@@ -533,7 +539,8 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandlerWithLocalhost() {
 
 	expectedHeaders = http.Header{
 		jsonHttpHandler.AllowOriginHeader:         []string{localhostOrigin},
-		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllowedMethods},
+		jsonHttpHandler.AllowHeadersHeader:        []string{jsonHttpHandler.AllowedHeaders},
 		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
 		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
 		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},
@@ -553,7 +560,8 @@ func (suite *JsonHttpApiSuite) TestCors_WithListBasedHandlerWithLocalhost() {
 
 	expectedHeaders = http.Header{
 		jsonHttpHandler.AllowOriginHeader:         []string{localhostOrigin},
-		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllMethods},
+		jsonHttpHandler.AllowMethodsHeader:        []string{jsonHttpHandler.AllowedMethods},
+		jsonHttpHandler.AllowHeadersHeader:        []string{jsonHttpHandler.AllowedHeaders},
 		jsonHttpHandler.AllowCredentialsHeader:    []string{"true"},
 		jsonHttpHandler.AccessControlMaxAgeHeader: []string{jsonHttpHandler.AccessControlMaxAgeHeaderValue},
 		jsonHttpHandler.VaryHeader:                []string{jsonHttpHandler.VaryHeaderValue},

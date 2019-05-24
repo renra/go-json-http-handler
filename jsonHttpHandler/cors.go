@@ -15,8 +15,10 @@ const (
 	AccessControlMaxAgeHeader = "Access-Control-Max-Age"
 	VaryHeader                = "Vary"
 
-	AllMethods                     = "GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD"
-	AccessControlMaxAgeHeaderValue = "1728000"
+	Any                            = "*"
+	AllowedMethods                 = Any
+	AllowedHeaders                 = Any
+	AccessControlMaxAgeHeaderValue = "86400"
 	VaryHeaderValue                = "Origin"
 )
 
@@ -29,9 +31,16 @@ func corsNoop(g Globals) http.HandlerFunc {
 
 func AddCorsHeaders(w http.ResponseWriter, origin string) {
 	w.Header().Set(AllowOriginHeader, origin)
-	w.Header().Set(AllowMethodsHeader, AllMethods)
+	w.Header().Set(AllowMethodsHeader, AllowedMethods)
+	w.Header().Set(AllowHeadersHeader, AllowedHeaders)
 	w.Header().Set(AccessControlMaxAgeHeader, AccessControlMaxAgeHeaderValue)
 	w.Header().Set(AllowCredentialsHeader, "true")
+}
+
+// Use this method to add CORS headers to unsuccessful responses to requests
+//   where you don't care anymore from where the request comes (422s, 500s ...)
+func AddCorsHeadersForAnyOrigin(w http.ResponseWriter) {
+	w.Header().Set(AllowOriginHeader, Any)
 }
 
 func isLocalhost(origin string) bool {
