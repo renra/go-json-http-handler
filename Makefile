@@ -7,3 +7,6 @@ dep:
 .DEFAULT_GOAL := test
 test:
 	go test ./test... -count 1 -v
+
+format:
+	find . -name *.go | xargs gofmt -w
